@@ -9,7 +9,7 @@
       background: #f2f2f2;
       text-align: center;
       padding: 50px;
-      transition: background 0.5s;
+      overflow: hidden; /* keep elements in viewport */
     }
     #logo {
       width: 200px;
@@ -38,15 +38,13 @@
       margin: 5px 0 0;
       color: #444;
     }
-    .easter-egg {
-      font-size: 20px;
-      color: #c00;
-      font-weight: bold;
+    .gravitized {
+      position: absolute;
+      cursor: grab;
     }
   </style>
 </head>
 <body>
-  <!-- Replace this with your logo -->
   <img id="logo" src="./logo.png" alt="Schoah Logo">
 
   <input type="text" id="query" placeholder="Search DuckDuckGo...">
@@ -55,21 +53,23 @@
 
   <script>
     function search() {
-      var query = document.getElementById('query').value.trim();
+      var query = document.getElementById('query').value.trim().toLowerCase();
       var resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
-      if (query.toLowerCase() === 'nexus s') {
-        // Easter Egg triggered
-        var isShrimpo = Math.floor(Math.random() * 1000) === 0; // 1 in 1000 chance
+      if (query === 'gravity') {
+        gravitize();
+        return;
+      }
 
+      // Regular Nexus S Easter Egg
+      if (query === 'nexus s') {
+        var isShrimpo = Math.floor(Math.random() * 1000) === 0;
         var joke = "Why did the Nexus S laugh? Because the iPhone tried to keep up and tripped over its own overpriced dongle!";
         var message = joke;
 
         if (isShrimpo) {
-          // Shrimpo version
           message = "WHY DID THE NEXUS S LAUGH? BECAUSE THE PATHETIC IPHONE TRIPPED OVER ITS STUPID DONGLE! HA!";
-          // Change background
           document.body.style.background = "url('./heatphone.png') no-repeat center center";
           document.body.style.backgroundSize = "cover";
         }
@@ -79,14 +79,13 @@
         egg.innerHTML = message;
         resultsDiv.appendChild(egg);
 
-        // Redirect after 10 seconds
         setTimeout(function() {
           window.location.href = 'https://en.wikipedia.org/wiki/Nexus_S';
         }, 10000);
-        return; // Stop normal search
+        return;
       }
 
-      // Normal search with DuckDuckGo API
+      // Normal DuckDuckGo search
       var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1';
 
       var xhr = new XMLHttpRequest();
@@ -139,6 +138,58 @@
       div.innerHTML =
         '<a href="' + item.FirstURL + '" target="_blank">' + item.Text + '</a>';
       container.appendChild(div);
+    }
+
+    function gravitize() {
+      var elements = document.body.children;
+      for (var i = 0; i < elements.length; i++) {
+        var el = elements[i];
+        if (el.tagName.toLowerCase() === 'script') continue;
+
+        wrapWithGravity(el);
+      }
+      animateGravity();
+    }
+
+    var boxes = [];
+
+    function wrapWithGravity(el) {
+      var box = document.createElement('div');
+      box.style.position = 'absolute';
+      box.style.cursor = 'grab';
+      box.innerHTML = el.outerHTML;
+      box.style.left = el.offsetLeft + 'px';
+      box.style.top = el.offsetTop + 'px';
+      el.style.display = 'none'; // hide original
+      document.body.appendChild(box);
+
+      boxes.push({
+        el: box,
+        x: el.offsetLeft,
+        y: el.offsetTop,
+        vy: 0
+      });
+    }
+
+    function animateGravity() {
+      var gravity = 0.5;
+      var bounce = 0.7;
+      var floor = window.innerHeight;
+
+      setInterval(function() {
+        for (var i = 0; i < boxes.length; i++) {
+          var b = boxes[i];
+          b.vy += gravity;
+          b.y += b.vy;
+
+          if (b.y + b.el.offsetHeight > floor) {
+            b.y = floor - b.el.offsetHeight;
+            b.vy *= -bounce;
+          }
+
+          b.el.style.top = b.y + 'px';
+        }
+      }, 20);
     }
   </script>
 </body>

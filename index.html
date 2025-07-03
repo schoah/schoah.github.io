@@ -13,7 +13,8 @@
       background: #f2f2f2;
       text-align: center;
       padding: 50px;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto; /* Allow scrolling! */
       margin: 0;
       transition: all 0.5s;
     }
@@ -80,6 +81,15 @@
       var resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
+      // === Vee random break (1/512 chance) ===
+      if (Math.floor(Math.random() * 512) === 0) {
+        var veeDiv = document.createElement('div');
+        veeDiv.className = 'easter-egg';
+        veeDiv.textContent = "Vee here! I broke the search results. Oops!";
+        resultsDiv.appendChild(veeDiv);
+        return; // Stop search
+      }
+
       if (query === 'gravity') {
         gravitize();
         return;
@@ -107,7 +117,7 @@
         return;
       }
 
-      // Normal DuckDuckGo search
+      // === Normal DuckDuckGo search ===
       var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1';
 
       var xhr = new XMLHttpRequest();

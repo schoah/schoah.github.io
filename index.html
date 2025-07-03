@@ -14,9 +14,14 @@
       text-align: center;
       padding: 50px;
       overflow-x: hidden;
-      overflow-y: auto; /* Allow scrolling! */
+      overflow-y: auto;
       margin: 0;
       transition: all 0.5s;
+    }
+    #disclaimer {
+      font-size: 14px;
+      color: #ff0000;
+      margin-bottom: 20px;
     }
     #logo {
       width: 200px;
@@ -53,10 +58,12 @@
   </style>
 </head>
 <body>
+  <div id="disclaimer">⚠️ Schoah is in beta and will break at any time.</div>
+
   <img id="logo" src="./logo.png" alt="Schoah Logo">
 
   <div>
-    <input type="text" id="query" placeholder="Search DuckDuckGo...">
+    <input type="text" id="query" placeholder="Search DuckDuckGo or YouTube ID...">
     <button onclick="search()">Search</button>
   </div>
 
@@ -69,6 +76,7 @@
       <option value="directv">DirecTV</option>
       <option value="headphone">Headphone</option>
       <option value="apple">Apple</option>
+      <option value="wii">Nintendo Wii</option>
     </select>
     <button onclick="applyTheme()">Apply Theme</button>
   </div>
@@ -77,11 +85,11 @@
 
   <script>
     function search() {
-      var query = document.getElementById('query').value.trim().toLowerCase();
+      var query = document.getElementById('query').value.trim();
       var resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
-      // === Vee random break (1/512 chance) ===
+      // === Vee Easter egg (1/512 chance) ===
       if (Math.floor(Math.random() * 512) === 0) {
         var veeDiv = document.createElement('div');
         veeDiv.className = 'easter-egg';
@@ -90,12 +98,29 @@
         return; // Stop search
       }
 
-      if (query === 'gravity') {
+      // === YouTube ID embed ===
+      var ytIDpattern = /^[a-zA-Z0-9_-]{11}$/;
+      if (ytIDpattern.test(query)) {
+        var iframe = document.createElement('iframe');
+        iframe.width = "560";
+        iframe.height = "315";
+        iframe.src = "https://www.youtube.com/embed/" + query;
+        iframe.title = "YouTube video player";
+        iframe.frameBorder = "0";
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+        resultsDiv.appendChild(iframe);
+        return;
+      }
+
+      // === Gravity ===
+      if (query.toLowerCase() === 'gravity') {
         gravitize();
         return;
       }
 
-      if (query === 'nexus s') {
+      // === Nexus S ===
+      if (query.toLowerCase() === 'nexus s') {
         var isShrimpo = Math.floor(Math.random() * 1000) === 0;
         var joke = "Why did the Nexus S laugh? Because the iPhone tried to keep up and tripped over its own overpriced dongle!";
         var message = joke;
@@ -117,7 +142,7 @@
         return;
       }
 
-      // === Normal DuckDuckGo search ===
+      // === DuckDuckGo search ===
       var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1';
 
       var xhr = new XMLHttpRequest();
@@ -204,13 +229,17 @@
           document.body.style.color = '#000';
           document.body.style.fontFamily = 'Helvetica Neue, Arial, sans-serif';
           break;
+        case 'wii':
+          document.body.style.background = '#f5f9ff';
+          document.body.style.color = '#555';
+          break;
         default:
           document.body.style.background = '#f2f2f2';
           document.body.style.color = '#000';
       }
     }
 
-    // === GRAVITY EFFECT ===
+    // === GRAVITY (same as before) ===
     var boxes = [];
     var draggingBox = null;
     var offsetX = 0;

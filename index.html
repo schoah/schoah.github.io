@@ -14,6 +14,7 @@
       text-align: center;
       padding: 50px;
       overflow: hidden;
+      margin: 0;
     }
     #logo {
       width: 200px;
@@ -50,7 +51,6 @@
   </style>
 </head>
 <body>
-  <!-- Local logo image -->
   <img id="logo" src="./logo.png" alt="Schoah Logo">
 
   <input type="text" id="query" placeholder="Search DuckDuckGo...">
@@ -148,6 +148,9 @@
     // === GRAVITY EFFECT ===
 
     var boxes = [];
+    var draggingBox = null;
+    var offsetX = 0;
+    var offsetY = 0;
 
     function gravitize() {
       var elements = [];
@@ -160,7 +163,12 @@
       for (var j = 0; j < elements.length; j++) {
         wrapWithGravity(elements[j]);
       }
+
       requestAnimationFrame(animateGravity);
+
+      document.addEventListener('mousedown', startDrag);
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', endDrag);
     }
 
     function wrapWithGravity(el) {
@@ -171,6 +179,7 @@
       box.style.top = rect.top + 'px';
       box.style.width = rect.width + 'px';
       box.style.height = rect.height + 'px';
+      box.style.cursor = 'grab';
       box.innerHTML = el.outerHTML;
       el.style.visibility = 'hidden';
       document.body.appendChild(box);
@@ -179,7 +188,8 @@
         el: box,
         x: rect.left,
         y: rect.top,
-        vy: 0
+        vy: 0,
+        vx: 0
       });
     }
 
@@ -187,21 +197,116 @@
       var gravity = 0.5;
       var bounce = 0.7;
       var floor = window.innerHeight;
+      var rightWall = window.innerWidth;
 
       for (var i = 0; i < boxes.length; i++) {
         var b = boxes[i];
-        b.vy += gravity;
-        b.y += b.vy;
+        if (b.el !== draggingBox) {
+          b.vy += gravity;
+          b.x += b.vx;
+          b.y += b.vy;
 
-        if (b.y + b.el.offsetHeight > floor) {
-          b.y = floor - b.el.offsetHeight;
-          b.vy *= -bounce;
+          // Floor
+          if (b.y + b.el.offsetHeight > floor) {
+            b.y = floor - b.el.offsetHeight;
+            b.vy *= -bounce;
+          }
+
+          // Walls
+          if (b.x < 0) {
+            b.x = 0;
+            b.vx *= -bounce;
+          } else if (b.x + b.el.offsetWidth > rightWall) {
+            b.x = rightWall - b.el.offsetWidth;
+            b.vx *= -bounce;
+          }
+
+          // Basic collision
+          for (var j = 0; j < boxes.length; j++) {
+            if (i === j) continue;
+            var other = boxes[j];
+            if (isColliding(b, other)) {
+              resolveCollision(b, other);
+            }
+          }
+
+          b.el.style.left = b.x + 'px';
+          b.el.style.top = b.y + 'px';
         }
-
-        b.el.style.top = b.y + 'px';
       }
 
       requestAnimationFrame(animateGravity);
+    }
+
+    function isColliding(a, b) {
+      return !(
+        a.x + a.el.offsetWidth < b.x ||
+        a.x > b.x + b.el.offsetWidth ||
+        a.y + a.el.offsetHeight < b.y ||
+        a.y > b.y + b.el.offsetHeight
+      );
+    }
+
+    function resolveCollision(a, b) {
+      var overlapX = (a.x + a.el.offsetWidth / 2) - (b.x + b.el.offsetWidth / 2);
+      var overlapY = (a.y + a.el.offsetHeight / 2) - (b.y + b.el.offsetHeight / 2);
+
+      if (Math.abs(overlapX) > Math.abs(overlapY)) {
+        if (overlapX > 0) {
+          a.x += 1;
+          b.x -= 1;
+        } else {
+          a.x -= 1;
+          b.x += 1;
+        }
+        a.vx *= -0.7;
+        b.vx *= -0.7;
+      } else {
+        if (overlapY > 0) {
+          a.y += 1;
+          b.y -= 1;
+        } else {
+          a.y -= 1;
+          b.y += 1;
+        }
+        a.vy *= -0.7;
+        b.vy *= -0.7;
+      }
+    }
+
+    function startDrag(e) {
+      for (var i = boxes.length - 1; i >= 0; i--) {
+        var b = boxes[i];
+        var rect = b.el.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          draggingBox = b.el;
+          offsetX = e.clientX - rect.left;
+          offsetY = e.clientY - rect.top;
+          break;
+        }
+      }
+    }
+
+    function drag(e) {
+      if (draggingBox) {
+        for (var i = 0; i < boxes.length; i++) {
+          var b = boxes[i];
+          if (b.el === draggingBox) {
+            b.x = e.clientX - offsetX;
+            b.y = e.clientY - offsetY;
+            b.vx = 0;
+            b.vy = 0;
+            b.el.style.left = b.x + 'px';
+            b.el.style.top = b.y + 'px';
+            break;
+          }
+        }
+      }
+    }
+
+    function endDrag() {
+      draggingBox = null;
     }
   </script>
 </body>

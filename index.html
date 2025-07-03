@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Schoah</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 50px;
+      transition: background 0.5s;
+    }
+    #logo {
+      width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    #results {
+      text-align: left;
+      margin-top: 20px;
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .result {
+      margin-bottom: 15px;
+    }
+    .result a {
+      font-size: 18px;
+      font-weight: bold;
+      text-decoration: none;
+      color: #1a0dab;
+    }
+    .result p {
+      margin: 5px 0 0;
+      color: #444;
+    }
+    .easter-egg {
+      font-size: 20px;
+      color: #c00;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Replace this with your logo -->
+  <img id="logo" src="./logo.png" alt="Schoah Logo">
+
+  <input type="text" id="query" placeholder="Search DuckDuckGo...">
+  <button onclick="search()">Search</button>
+  <div id="results"></div>
+
+  <script>
+    function search() {
+      var query = document.getElementById('query').value.trim();
+      var resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      if (query.toLowerCase() === 'nexus s') {
+        // Easter Egg triggered
+        var isShrimpo = Math.floor(Math.random() * 1000) === 0; // 1 in 1000 chance
+
+        var joke = "Why did the Nexus S laugh? Because the iPhone tried to keep up and tripped over its own overpriced dongle!";
+        var message = joke;
+
+        if (isShrimpo) {
+          // Shrimpo version
+          message = "WHY DID THE NEXUS S LAUGH? BECAUSE THE PATHETIC IPHONE TRIPPED OVER ITS STUPID DONGLE! HA!";
+          // Change background
+          document.body.style.background = "url('./heatphone.png') no-repeat center center";
+          document.body.style.backgroundSize = "cover";
+        }
+
+        var egg = document.createElement('div');
+        egg.className = 'easter-egg';
+        egg.innerHTML = message;
+        resultsDiv.appendChild(egg);
+
+        // Redirect after 10 seconds
+        setTimeout(function() {
+          window.location.href = 'https://en.wikipedia.org/wiki/Nexus_S';
+        }, 10000);
+        return; // Stop normal search
+      }
+
+      // Normal search with DuckDuckGo API
+      var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1';
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+
+          if (data.AbstractText) {
+            var abstractDiv = document.createElement('div');
+            abstractDiv.className = 'result';
+            abstractDiv.innerHTML =
+              '<h3>' + data.Heading + '</h3>' +
+              '<p>' + data.AbstractText + '</p>' +
+              '<a href="' + data.AbstractURL + '" target="_blank">' + data.AbstractURL + '</a>';
+            resultsDiv.appendChild(abstractDiv);
+          }
+
+          if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+            var count = 0;
+            for (var i = 0; i < data.RelatedTopics.length; i++) {
+              var item = data.RelatedTopics[i];
+              if (item.Topics && item.Topics.length > 0) {
+                for (var j = 0; j < item.Topics.length; j++) {
+                  if (count >= 10) { break; }
+                  addResult(item.Topics[j], resultsDiv);
+                  count++;
+                }
+              } else if (item.Text && item.FirstURL) {
+                if (count >= 10) { break; }
+                addResult(item, resultsDiv);
+                count++;
+              }
+            }
+          }
+
+          if (!data.AbstractText && (!data.RelatedTopics || data.RelatedTopics.length === 0)) {
+            resultsDiv.innerHTML = 'No results found.';
+          }
+        }
+      };
+
+      xhr.send();
+    }
+
+    function addResult(item, container) {
+      var div = document.createElement('div');
+      div.className = 'result';
+      div.innerHTML =
+        '<a href="' + item.FirstURL + '" target="_blank">' + item.Text + '</a>';
+      container.appendChild(div);
+    }
+  </script>
+</body>
+</html>

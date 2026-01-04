@@ -53,6 +53,9 @@
       text-decoration: none;
       color: #1a0dab;
     }
+    .update {
+      font-family: 'Comedy Central 2011', Arial, sans-serif;
+    }
     .result p {
       margin: 5px 0 0;
       color: #444;
@@ -66,7 +69,7 @@
 </head>
 <body>
   <center>Schoah is now getting more updates. but is still in beta.</center>
-    <div>update:</div>
+    <div>update: <span class="update">Please Wait...</span></div>
 
   <img id="logo" src="./logo.png" alt="Schoah Logo">
 
@@ -92,6 +95,7 @@
   <div id="results"></div>
 
   <script>
+    const meg = document.getElementsByClassName("update");
     function search() {
       var query = document.getElementById('query').value.trim();
       var resultsDiv = document.getElementById('results');
@@ -120,6 +124,30 @@
         resultsDiv.appendChild(iframe);
         return;
       }
+
+var a1 = "";
+
+fetch("https://schoah.github.io/update.txt")
+  .then(r => {
+    if (!r.ok) meg[i].textContent = "shut up meg";
+    return r.text();
+  })
+  .then(text => {
+    a1 = text;
+
+    
+    for (let i = 0; i < meg.length; i++) {
+      meg[i].textContent = a1;
+    }
+  })
+  .catch(error => {
+    console.error("fail:", error);
+
+    const meg = document.getElementsByClassName("update");
+    for (let i = 0; i < meg.length; i++) {
+      meg[i].textContent = "shut up meg";
+    }
+  });
 
 
 

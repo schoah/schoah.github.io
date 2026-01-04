@@ -127,27 +127,6 @@
 
 var a1 = "";
 
-fetch("https://schoah.github.io/update.txt")
-  .then(r => {
-    if (!r.ok) meg[i].textContent = "shut up meg";
-    return r.text();
-  })
-  .then(text => {
-    a1 = text;
-
-    
-    for (let i = 0; i < meg.length; i++) {
-      meg[i].textContent = a1;
-    }
-  })
-  .catch(error => {
-    console.error("fail:", error);
-
-    const meg = document.getElementsByClassName("update");
-    for (let i = 0; i < meg.length; i++) {
-      meg[i].textContent = "shut up meg";
-    }
-  });
 
 
 
@@ -252,6 +231,27 @@ fetch("https://schoah.github.io/update.txt")
       }
     }
 
+fetch("https://schoah.github.io/update.txt")
+  .then(r => {
+    if (!r.ok) meg[i].textContent = "shut up meg";
+    return r.text();
+  })
+  .then(text => {
+    a1 = text;
+
+    
+    for (let i = 0; i < meg.length; i++) {
+      meg[i].textContent = a1;
+    }
+  })
+  .catch(error => {
+    console.error("fail:", error);
+
+    const meg = document.getElementsByClassName("update");
+    for (let i = 0; i < meg.length; i++) {
+      meg[i].textContent = "shut up meg";
+    }
+  });
 
 
 

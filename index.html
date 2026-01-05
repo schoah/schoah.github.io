@@ -233,7 +233,7 @@ var a1 = "";
 
 fetch("https://schoah.github.io/update.txt")
   .then(r => {
-    if (!r.ok) meg[i].textContent = "shut up meg";
+    if (!r.ok) meg[i].textContent = "An error occurred. Please try again later.";
     return r.text();
   })
   .then(text => {
@@ -249,7 +249,7 @@ fetch("https://schoah.github.io/update.txt")
 
     const meg = document.getElementsByClassName("update");
     for (let i = 0; i < meg.length; i++) {
-      meg[i].textContent = "shut up meg";
+      meg[i].textContent = "An error occurred. Please try again later.";
     }
   });
 
